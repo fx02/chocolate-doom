@@ -22,6 +22,7 @@
 #include "doomdef.h"
 #include "doomkeys.h"
 #include "deh_str.h"
+#include "i_input.h"
 #include "i_timer.h"
 #include "i_system.h"
 #include "m_argv.h"
@@ -192,6 +193,7 @@ int dclicktime2, dclickstate2, dclicks2;
 
 int joyxmove, joyymove;         // joystick values are repeated
 int joystrafemove;
+int joylook;
 boolean joyarray[MAX_JOY_BUTTONS + 1];
 boolean *joybuttons = &joyarray[1];     // allow [-1]
 
@@ -385,11 +387,11 @@ void G_BuildTiccmd(ticcmd_t *cmd, int maketic)
         side -= sidemove[speed];
 
     // Look up/down/center keys
-    if (gamekeydown[key_lookup])
+    if (gamekeydown[key_lookup] || joylook < 0)
     {
         look = lspeed;
     }
-    if (gamekeydown[key_lookdown])
+    if (gamekeydown[key_lookdown] || joylook > 0)
     {
         look = -lspeed;
     }
@@ -688,7 +690,7 @@ void G_DoLoadLevel(void)
 //
 
     memset(gamekeydown, 0, sizeof(gamekeydown));
-    joyxmove = joyymove = joystrafemove = 0;
+    joyxmove = joyymove = joystrafemove = joylook = 0;
     mousex = mousey = 0;
     sendpause = sendsave = paused = false;
     memset(mousearray, 0, sizeof(mousearray));
@@ -905,6 +907,7 @@ boolean G_Responder(event_t * ev)
             joyxmove = ev->data2;
             joyymove = ev->data3;
             joystrafemove = ev->data4;
+            joylook = ev->data5;
             return (true);      // eat events
 
         default:
@@ -1564,7 +1567,7 @@ void G_InitNew(skill_t skill, int episode, int map)
 {
     int i;
     int speed;
-    static char *skyLumpNames[5] = {
+    static const char *skyLumpNames[5] = {
         "SKY1", "SKY2", "SKY3", "SKY1", "SKY3"
     };
 
@@ -1866,9 +1869,9 @@ void G_RecordDemo(skill_t skill, int numplayers, int episode, int map,
 ===================
 */
 
-char *defdemoname;
+static const char *defdemoname;
 
-void G_DeferedPlayDemo(char *name)
+void G_DeferedPlayDemo(const char *name)
 {
     defdemoname = name;
     gameaction = ga_playdemo;

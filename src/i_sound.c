@@ -21,7 +21,6 @@
 #include "SDL_mixer.h"
 
 #include "config.h"
-#include "doomfeatures.h"
 #include "doomtype.h"
 
 #include "gusconf.h"
@@ -53,13 +52,19 @@ char *snd_musiccmd = "";
 
 int snd_pitchshift = -1;
 
-// Low-level sound and music modules we are using
+int snd_musicdevice = SNDDEVICE_SB;
+int snd_sfxdevice = SNDDEVICE_SB;
 
+// Low-level sound and music modules we are using
 static sound_module_t *sound_module;
 static music_module_t *music_module;
 
-int snd_musicdevice = SNDDEVICE_SB;
-int snd_sfxdevice = SNDDEVICE_SB;
+// If true, the music pack module was successfully initialized.
+static boolean music_packs_active = false;
+
+// This is either equal to music_module or &music_pack_module,
+// depending on whether the current track is substituted.
+static music_module_t *active_music_module;
 
 // Sound modules
 
@@ -68,6 +73,7 @@ extern sound_module_t sound_sdl_module;
 extern sound_module_t sound_pcsound_module;
 extern music_module_t music_sdl_module;
 extern music_module_t music_opl_module;
+extern music_module_t music_pack_module;
 
 // For OPL module:
 
@@ -76,6 +82,7 @@ extern int opl_io_port;
 
 // For native music module:
 
+extern char *music_pack_path;
 extern char *timidity_cfg_path;
 
 // DOS-specific options: These are unused but should be maintained
@@ -91,10 +98,8 @@ static int snd_mport = 0;
 
 static sound_module_t *sound_modules[] = 
 {
-#ifdef FEATURE_SOUND
     &sound_sdl_module,
     &sound_pcsound_module,
-#endif
     NULL,
 };
 
@@ -102,10 +107,8 @@ static sound_module_t *sound_modules[] =
 
 static music_module_t *music_modules[] =
 {
-#ifdef FEATURE_SOUND
     &music_sdl_module,
     &music_opl_module,
-#endif
     NULL,
 };
 
@@ -191,8 +194,8 @@ static void InitMusicModule(void)
 //
 
 void I_InitSound(boolean use_sfx_prefix)
-{  
-    boolean nosound, nosfx, nomusic;
+{
+    boolean nosound, nosfx, nomusic, nomusicpacks;
 
     //!
     // @vanilla
@@ -218,6 +221,16 @@ void I_InitSound(boolean use_sfx_prefix)
 
     nomusic = M_CheckParm("-nomusic") > 0;
 
+    //!
+    //
+    // Disable substitution music packs.
+    //
+
+    nomusicpacks = M_ParmExists("-nomusicpacks");
+
+    // Auto configure the music pack directory.
+    M_SetMusicPackDir();
+
     // Initialize the sound and music subsystems.
 
     if (!nosound && !screensaver_mode)
@@ -241,6 +254,13 @@ void I_InitSound(boolean use_sfx_prefix)
         if (!nomusic)
         {
             InitMusicModule();
+            active_music_module = music_module;
+        }
+
+        // We may also have substitute MIDIs we can load.
+        if (!nomusicpacks && music_module != NULL)
+        {
+            music_packs_active = music_pack_module.Init();
         }
     }
 }
@@ -252,6 +272,11 @@ void I_ShutdownSound(void)
         sound_module->Shutdown();
     }
 
+    if (music_packs_active)
+    {
+        music_pack_module.Shutdown();
+    }
+
     if (music_module != NULL)
     {
         music_module->Shutdown();
@@ -260,7 +285,7 @@ void I_ShutdownSound(void)
 
 int I_GetSfxLumpNum(sfxinfo_t *sfxinfo)
 {
-    if (sound_module != NULL) 
+    if (sound_module != NULL)
     {
         return sound_module->GetSfxLumpNum(sfxinfo);
     }
@@ -277,9 +302,9 @@ void I_UpdateSound(void)
         sound_module->Update();
     }
 
-    if (music_module != NULL && music_module->Poll != NULL)
+    if (active_music_module != NULL && active_music_module->Poll != NULL)
     {
-        music_module->Poll();
+        active_music_module->Poll();
     }
 }
 
@@ -365,33 +390,51 @@ void I_ShutdownMusic(void)
 
 void I_SetMusicVolume(int volume)
 {
-    if (music_module != NULL)
+    if (active_music_module != NULL)
     {
-        music_module->SetMusicVolume(volume);
+        active_music_module->SetMusicVolume(volume);
     }
 }
 
 void I_PauseSong(void)
 {
-    if (music_module != NULL)
+    if (active_music_module != NULL)
     {
-        music_module->PauseMusic();
+        active_music_module->PauseMusic();
     }
 }
 
 void I_ResumeSong(void)
 {
-    if (music_module != NULL)
+    if (active_music_module != NULL)
     {
-        music_module->ResumeMusic();
+        active_music_module->ResumeMusic();
     }
 }
 
 void *I_RegisterSong(void *data, int len)
 {
-    if (music_module != NULL)
+    // If the music pack module is active, check to see if there is a
+    // valid substitution for this track. If there is, we set the
+    // active_music_module pointer to the music pack module for the
+    // duration of this particular track.
+    if (music_packs_active)
     {
-        return music_module->RegisterSong(data, len);
+        void *handle;
+
+        handle = music_pack_module.RegisterSong(data, len);
+        if (handle != NULL)
+        {
+            active_music_module = &music_pack_module;
+            return handle;
+        }
+    }
+
+    // No substitution for this track, so use the main module.
+    active_music_module = music_module;
+    if (active_music_module != NULL)
+    {
+        return active_music_module->RegisterSong(data, len);
     }
     else
     {
@@ -401,33 +444,33 @@ void *I_RegisterSong(void *data, int len)
 
 void I_UnRegisterSong(void *handle)
 {
-    if (music_module != NULL)
+    if (active_music_module != NULL)
     {
-        music_module->UnRegisterSong(handle);
+        active_music_module->UnRegisterSong(handle);
     }
 }
 
 void I_PlaySong(void *handle, boolean looping)
 {
-    if (music_module != NULL)
+    if (active_music_module != NULL)
     {
-        music_module->PlaySong(handle, looping);
+        active_music_module->PlaySong(handle, looping);
     }
 }
 
 void I_StopSong(void)
 {
-    if (music_module != NULL)
+    if (active_music_module != NULL)
     {
-        music_module->StopSong();
+        active_music_module->StopSong();
     }
 }
 
 boolean I_MusicIsPlaying(void)
 {
-    if (music_module != NULL)
+    if (active_music_module != NULL)
     {
-        return music_module->MusicIsPlaying();
+        return active_music_module->MusicIsPlaying();
     }
     else
     {
@@ -455,29 +498,12 @@ void I_BindSoundVariables(void)
     M_BindIntVariable("opl_io_port",             &opl_io_port);
     M_BindIntVariable("snd_pitchshift",          &snd_pitchshift);
 
+    M_BindStringVariable("music_pack_path",      &music_pack_path);
     M_BindStringVariable("timidity_cfg_path",    &timidity_cfg_path);
     M_BindStringVariable("gus_patch_path",       &gus_patch_path);
     M_BindIntVariable("gus_ram_kb",              &gus_ram_kb);
 
-#ifdef FEATURE_SOUND
     M_BindIntVariable("use_libsamplerate",       &use_libsamplerate);
     M_BindFloatVariable("libsamplerate_scale",   &libsamplerate_scale);
-#endif
-
-    // Before SDL_mixer version 1.2.11, MIDI music caused the game
-    // to crash when it looped.  If this is an old SDL_mixer version,
-    // disable MIDI.
-
-#ifdef __MACOSX__
-    {
-        const SDL_version *v = Mix_Linked_Version();
-
-        if (SDL_VERSIONNUM(v->major, v->minor, v->patch)
-          < SDL_VERSIONNUM(1, 2, 11))
-        {
-            snd_musicdevice = SNDDEVICE_NONE;
-        }
-    }
-#endif
 }
 

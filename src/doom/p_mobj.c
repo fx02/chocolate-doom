@@ -653,7 +653,14 @@ void P_RespawnSpecials (void)
 	if (mthing->type == mobjinfo[i].doomednum)
 	    break;
     }
-    
+
+    if (i >= NUMMOBJTYPES)
+    {
+        I_Error("P_RespawnSpecials: Failed to find mobj type with doomednum "
+                "%d when respawning thing. This would cause a buffer overrun "
+                "in vanilla Doom", mthing->type);
+    }
+
     // spawn it
     if (mobjinfo[i].flags & MF_SPAWNCEILING)
 	z = ONCEILINGZ;
@@ -781,6 +788,7 @@ void P_SpawnMapThing (mapthing_t* mthing)
     {
 	// save spots for respawning in network games
 	playerstarts[mthing->type-1] = *mthing;
+	playerstartsingame[mthing->type-1] = true;
 	if (!deathmatch)
 	    P_SpawnPlayer (mthing);
 

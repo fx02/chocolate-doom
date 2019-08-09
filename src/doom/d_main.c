@@ -31,7 +31,6 @@
 #include "doomstat.h"
 
 #include "dstrings.h"
-#include "doomfeatures.h"
 #include "sounds.h"
 
 #include "d_iwad.h"
@@ -54,6 +53,7 @@
 #include "p_saveg.h"
 
 #include "i_endoom.h"
+#include "i_input.h"
 #include "i_joystick.h"
 #include "i_system.h"
 #include "i_timer.h"
@@ -166,7 +166,7 @@ extern  boolean setsizeneeded;
 extern  int             showMessages;
 void R_ExecuteSetViewSize (void);
 
-void D_Display (void)
+boolean D_Display (void)
 {
     static  boolean		viewactivestate = false;
     static  boolean		menuactivestate = false;
@@ -174,16 +174,9 @@ void D_Display (void)
     static  boolean		fullscreen = false;
     static  gamestate_t		oldgamestate = -1;
     static  int			borderdrawcount;
-    int				nowtime;
-    int				tics;
-    int				wipestart;
     int				y;
-    boolean			done;
     boolean			wipe;
     boolean			redrawsbar;
-
-    if (nodrawers)
-	return;                    // for comparative timing / profiling
 		
     redrawsbar = false;
     
@@ -298,40 +291,12 @@ void D_Display (void)
     M_Drawer ();          // menu is drawn even on top of everything
     NetUpdate ();         // send out any new accumulation
 
-
-    // normal update
-    if (!wipe)
-    {
-	I_FinishUpdate ();              // page flip or blit buffer
-	return;
-    }
-    
-    // wipe update
-    wipe_EndScreen(0, 0, SCREENWIDTH, SCREENHEIGHT);
-
-    wipestart = I_GetTime () - 1;
-
-    do
-    {
-	do
-	{
-	    nowtime = I_GetTime ();
-	    tics = nowtime - wipestart;
-            I_Sleep(1);
-	} while (tics <= 0);
-        
-	wipestart = nowtime;
-	done = wipe_ScreenWipe(wipe_Melt
-			       , 0, 0, SCREENWIDTH, SCREENHEIGHT, tics);
-	I_UpdateNoBlit ();
-	M_Drawer ();                            // menu is drawn even on top of wipes
-	I_FinishUpdate ();                      // page flip or blit buffer
-    } while (!done);
+    return wipe;
 }
 
 static void EnableLoadingDisk(void)
 {
-    char *disk_lump_name;
+    const char *disk_lump_name;
 
     if (show_diskicon)
     {
@@ -360,6 +325,7 @@ void D_BindVariables(void)
 
     M_ApplyPlatformDefaults();
 
+    I_BindInputVariables();
     I_BindVideoVariables();
     I_BindJoystickVariables();
     I_BindSoundVariables();
@@ -375,9 +341,7 @@ void D_BindVariables(void)
     key_multi_msgplayer[2] = HUSTR_KEYBROWN;
     key_multi_msgplayer[3] = HUSTR_KEYRED;
 
-#ifdef FEATURE_MULTIPLAYER
     NET_BindVariables();
-#endif
 
     M_BindIntVariable("mouse_sensitivity",      &mouseSensitivity);
     M_BindIntVariable("sfx_volume",             &sfxVolume);
@@ -426,6 +390,57 @@ boolean D_GrabMouseCallback(void)
 }
 
 //
+//  D_RunFrame
+//
+void D_RunFrame()
+{
+    int nowtime;
+    int tics;
+    static int wipestart;
+    static boolean wipe;
+
+    if (wipe)
+    {
+        do
+        {
+            nowtime = I_GetTime ();
+            tics = nowtime - wipestart;
+            I_Sleep(1);
+        } while (tics <= 0);
+
+        wipestart = nowtime;
+        wipe = !wipe_ScreenWipe(wipe_Melt
+                               , 0, 0, SCREENWIDTH, SCREENHEIGHT, tics);
+        I_UpdateNoBlit ();
+        M_Drawer ();                            // menu is drawn even on top of wipes
+        I_FinishUpdate ();                      // page flip or blit buffer
+        return;
+    }
+
+    // frame syncronous IO operations
+    I_StartFrame ();
+
+    TryRunTics (); // will run at least one tic
+
+    S_UpdateSounds (players[consoleplayer].mo);// move positional sounds
+
+    // Update display, next frame, with current state if no profiling is on
+    if (screenvisible && !nodrawers)
+    {
+        if ((wipe = D_Display ()))
+        {
+            // start wipe on this frame
+            wipe_EndScreen(0, 0, SCREENWIDTH, SCREENHEIGHT);
+
+            wipestart = I_GetTime () - 1;
+        } else {
+            // normal update
+            I_FinishUpdate ();              // page flip or blit buffer
+        }
+    }
+}
+
+//
 //  D_DoomLoop
 //
 void D_DoomLoop (void)
@@ -444,13 +459,13 @@ void D_DoomLoop (void)
 
     main_loop_started = true;
 
-    TryRunTics();
-
     I_SetWindowTitle(gamedescription);
     I_GraphicsCheckCommandLine();
     I_SetGrabMouseCallback(D_GrabMouseCallback);
     I_InitGraphics();
     EnableLoadingDisk();
+
+    TryRunTics();
 
     V_RestoreBuffer();
     R_ExecuteSetViewSize();
@@ -464,16 +479,7 @@ void D_DoomLoop (void)
 
     while (1)
     {
-	// frame syncronous IO operations
-	I_StartFrame ();
-
-        TryRunTics (); // will run at least one tic
-
-	S_UpdateSounds (players[consoleplayer].mo);// move positional sounds
-
-	// Update display, next frame, with current state.
-        if (screenvisible)
-            D_Display ();
+        D_RunFrame();
     }
 }
 
@@ -484,7 +490,7 @@ void D_DoomLoop (void)
 //
 int             demosequence;
 int             pagetic;
-char                    *pagename;
+const char                    *pagename;
 
 
 //
@@ -622,7 +628,7 @@ void D_StartTitle (void)
 // These are from the original source: some of them are perhaps
 // not used in any dehacked patches
 
-static char *banners[] =
+static const char *banners[] =
 {
     // doom2.wad
     "                         "
@@ -670,7 +676,7 @@ static char *banners[] =
 static char *GetGameName(char *gamename)
 {
     size_t i;
-    char *deh_sub;
+    const char *deh_sub;
     
     for (i=0; i<arrlen(banners); ++i)
     {
@@ -710,12 +716,12 @@ static char *GetGameName(char *gamename)
     return gamename;
 }
 
-static void SetMissionForPackName(char *pack_name)
+static void SetMissionForPackName(const char *pack_name)
 {
     int i;
     static const struct
     {
-        char *name;
+        const char *name;
         int mission;
     } packs[] = {
         { "doom2",    doom2 },
@@ -901,7 +907,7 @@ static boolean D_AddFile(char *filename)
 // Some dehacked mods replace these.  These are only displayed if they are 
 // replaced by dehacked.
 
-static char *copyright_banners[] =
+static const char *copyright_banners[] =
 {
     "===========================================================================\n"
     "ATTENTION:  This version of DOOM has been modified.  If you would like to\n"
@@ -928,7 +934,7 @@ void PrintDehackedBanners(void)
 
     for (i=0; i<arrlen(copyright_banners); ++i)
     {
-        char *deh_s;
+        const char *deh_s;
 
         deh_s = DEH_String(copyright_banners[i]);
 
@@ -949,8 +955,8 @@ void PrintDehackedBanners(void)
 
 static struct 
 {
-    char *description;
-    char *cmdline;
+    const char *description;
+    const char *cmdline;
     GameVersion_t version;
 } gameversions[] = {
     {"Doom 1.666",           "1.666",      exe_doom_1_666},
@@ -1163,23 +1169,12 @@ static void LoadIwadDeh(void)
     if (gameversion == exe_chex)
     {
         char *chex_deh = NULL;
-        char *sep;
+        char *dirname;
 
         // Look for chex.deh in the same directory as the IWAD file.
-        sep = strrchr(iwadfile, DIR_SEPARATOR);
-
-        if (sep != NULL)
-        {
-            size_t chex_deh_len = strlen(iwadfile) + 9;
-            chex_deh = malloc(chex_deh_len);
-            M_StringCopy(chex_deh, iwadfile, chex_deh_len);
-            chex_deh[sep - iwadfile + 1] = '\0';
-            M_StringConcat(chex_deh, "chex.deh", chex_deh_len);
-        }
-        else
-        {
-            chex_deh = M_StringDuplicate("chex.deh");
-        }
+        dirname = M_DirName(iwadfile);
+        chex_deh = M_StringJoin(dirname, DIR_SEPARATOR_S, "chex.deh", NULL);
+        free(dirname);
 
         // If the dehacked patch isn't found, try searching the WAD
         // search path instead.  We might find it...
@@ -1230,7 +1225,6 @@ void D_DoomMain (void)
     DEH_printf("Z_Init: Init zone memory allocation daemon. \n");
     Z_Init ();
 
-#ifdef FEATURE_MULTIPLAYER
     //!
     // @category net
     //
@@ -1287,9 +1281,8 @@ void D_DoomMain (void)
         exit(0);
     }
 
-#endif
-
     //!
+    // @category game
     // @vanilla
     //
     // Disable monsters.
@@ -1298,6 +1291,7 @@ void D_DoomMain (void)
     nomonsters = M_CheckParm ("-nomonsters");
 
     //!
+    // @category game
     // @vanilla
     //
     // Monsters respawn after being killed.
@@ -1306,6 +1300,7 @@ void D_DoomMain (void)
     respawnparm = M_CheckParm ("-respawn");
 
     //!
+    // @category game
     // @vanilla
     //
     // Monsters move faster.
@@ -1313,10 +1308,10 @@ void D_DoomMain (void)
 
     fastparm = M_CheckParm ("-fast");
 
-    //! 
+    //!
     // @vanilla
     //
-    // Developer mode.  F1 saves a screenshot in the current working
+    // Developer mode. F1 saves a screenshot in the current working
     // directory.
     //
 
@@ -1353,6 +1348,7 @@ void D_DoomMain (void)
 #ifdef _WIN32
 
     //!
+    // @category obscure
     // @platform windows
     // @vanilla
     //
@@ -1375,6 +1371,7 @@ void D_DoomMain (void)
     }
 
     //!
+    // @category game
     // @arg <x>
     // @vanilla
     //
@@ -1486,7 +1483,6 @@ void D_DoomMain (void)
         // secret level (MAP33). In Vanilla Doom (meaning the DOS
         // version), MAP33 overflows into the Plutonia level names
         // array, so HUSTR_33 is actually PHUSTR_1.
-
         DEH_AddStringReplacement(HUSTR_31, "level 31: idkfa");
         DEH_AddStringReplacement(HUSTR_32, "level 32: keen");
         DEH_AddStringReplacement(PHUSTR_1, "level 33: betray");
@@ -1500,12 +1496,40 @@ void D_DoomMain (void)
         // The end result is that M_GDHIGH is too wide and causes the game
         // to crash. As a workaround to get a minimum level of support for
         // the BFG edition IWADs, use the "ON"/"OFF" graphics instead.
-
         DEH_AddStringReplacement("M_GDHIGH", "M_MSGON");
         DEH_AddStringReplacement("M_GDLOW", "M_MSGOFF");
+
+        // The BFG edition's "Screen Size:" graphic has also been changed
+        // to say "Gamepad:". Fortunately, it (along with the original
+        // Doom IWADs) has an unused graphic that says "Display". So we
+        // can swap this in instead, and it kind of makes sense.
+        DEH_AddStringReplacement("M_SCRNSZ", "M_DISP");
     }
 
-#ifdef FEATURE_DEHACKED
+    //!
+    // @category mod
+    //
+    // Disable auto-loading of .wad and .deh files.
+    //
+    if (!M_ParmExists("-noautoload") && gamemode != shareware)
+    {
+        char *autoload_dir;
+
+        // common auto-loaded files for all Doom flavors
+
+        autoload_dir = M_GetAutoloadDir("doom-all");
+        DEH_AutoLoadPatches(autoload_dir);
+        W_AutoLoadWADs(autoload_dir);
+        free(autoload_dir);
+
+        // auto-loaded files per IWAD
+
+        autoload_dir = M_GetAutoloadDir(D_SaveGameIWADName(gamemission));
+        DEH_AutoLoadPatches(autoload_dir);
+        W_AutoLoadWADs(autoload_dir);
+        free(autoload_dir);
+    }
+
     // Load Dehacked patches specified on the command line with -deh.
     // Note that there's a very careful and deliberate ordering to how
     // Dehacked patches are loaded. The order we use is:
@@ -1513,7 +1537,6 @@ void D_DoomMain (void)
     //  2. Command line dehacked patches specified with -deh.
     //  3. PWAD dehacked patches in DEHACKED lumps.
     DEH_ParseCommandLine();
-#endif
 
     // Load PWAD files.
     modifiedgame = W_ParseCommandLine();
@@ -1672,10 +1695,8 @@ void D_DoomMain (void)
     I_InitSound(true);
     I_InitMusic();
 
-#ifdef FEATURE_MULTIPLAYER
     printf ("NET_Init: Init network subsystem.\n");
     NET_Init ();
-#endif
 
     // Initial netgame startup. Connect to server etc.
     D_ConnectNetGame();
@@ -1687,6 +1708,7 @@ void D_DoomMain (void)
     autostart = false;
 
     //!
+    // @category game
     // @arg <skill>
     // @vanilla
     //
@@ -1703,6 +1725,7 @@ void D_DoomMain (void)
     }
 
     //!
+    // @category game
     // @arg <n>
     // @vanilla
     //
@@ -1750,6 +1773,7 @@ void D_DoomMain (void)
     }
 
     //!
+    // @category game
     // @arg [<x> <y> | <xy>]
     // @vanilla
     //
@@ -1797,6 +1821,7 @@ void D_DoomMain (void)
     // can override it or send the load slot to other players.
 
     //!
+    // @category game
     // @arg <s>
     // @vanilla
     //

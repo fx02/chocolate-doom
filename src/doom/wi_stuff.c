@@ -430,7 +430,8 @@ void WI_drawLF(void)
     }
     else if (wbs->last == NUMCMAPS)
     {
-        // MAP33 - nothing is displayed!
+        // MAP33 - draw "Finished!" only
+        V_DrawPatch((SCREENWIDTH - SHORT(finished->width)) / 2, y, finished);
     }
     else if (wbs->last > NUMCMAPS)
     {
@@ -1472,8 +1473,13 @@ void WI_drawStats(void)
 
     if (wbs->epsd < 3)
     {
-	V_DrawPatch(SCREENWIDTH/2 + SP_TIMEX, SP_TIMEY, par);
-	WI_drawTime(SCREENWIDTH - SP_TIMEX, SP_TIMEY, cnt_par);
+        V_DrawPatch(SCREENWIDTH/2 + SP_TIMEX, SP_TIMEY, par);
+
+        // Emulation: don't draw partime value if map33
+        if (gamemode != commercial || wbs->last != NUMCMAPS)
+        {
+            WI_drawTime(SCREENWIDTH - SP_TIMEX, SP_TIMEY, cnt_par);
+        }
     }
 
 }
@@ -1546,7 +1552,7 @@ void WI_Ticker(void)
 
 }
 
-typedef void (*load_callback_t)(char *lumpname, patch_t **variable);
+typedef void (*load_callback_t)(const char *lumpname, patch_t **variable);
 
 // Common load/unload function.  Iterates over all the graphics
 // lumps to be loaded/unloaded into memory.
@@ -1701,7 +1707,7 @@ static void WI_loadUnloadData(load_callback_t callback)
     callback(name, &background);
 }
 
-static void WI_loadCallback(char *name, patch_t **variable)
+static void WI_loadCallback(const char *name, patch_t **variable)
 {
     *variable = W_CacheLumpName(name, PU_STATIC);
 }
@@ -1732,7 +1738,7 @@ void WI_loadData(void)
     bstar = W_CacheLumpName(DEH_String("STFDEAD0"), PU_STATIC);
 }
 
-static void WI_unloadCallback(char *name, patch_t **variable)
+static void WI_unloadCallback(const char *name, patch_t **variable)
 {
     W_ReleaseLumpName(name);
     *variable = NULL;

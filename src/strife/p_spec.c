@@ -157,7 +157,7 @@ void P_InitPicAnims (void)
     lastanim = anims;
     for (i=0 ; animdefs[i].istexture != -1 ; i++)
     {
-        char *startname, *endname;
+        const char *startname, *endname;
 
         startname = DEH_String(animdefs[i].startname);
         endname = DEH_String(animdefs[i].endname);
@@ -196,7 +196,7 @@ void P_InitPicAnims (void)
 // villsa [STRIFE] terrain type definitions
 typedef struct
 {
-    char*   flat;
+    const char *flat;
     int     type;
     int     num;
 } terraintype_t;

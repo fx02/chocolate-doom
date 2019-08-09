@@ -34,6 +34,7 @@
 #include "m_misc.h"
 #include "m_saves.h" // STRIFE
 #include "m_random.h"
+#include "i_input.h"
 #include "i_system.h"
 #include "i_timer.h"
 #include "i_video.h"
@@ -218,6 +219,7 @@ static int      dclicks2;
 static int      joyxmove;
 static int      joyymove;
 static int      joystrafemove;
+static int      joylook;
 static boolean  joyarray[MAX_JOY_BUTTONS + 1]; 
 static boolean *joybuttons = &joyarray[1];		// allow [-1] 
  
@@ -342,11 +344,11 @@ void G_BuildTiccmd (ticcmd_t* cmd, int maketic)
         consistancy[consoleplayer][maketic%BACKUPTICS]; 
 
     // villsa [STRIFE] look up key
-    if(gamekeydown[key_lookup])
+    if(gamekeydown[key_lookup] || joylook < 0)
         cmd->buttons2 |= BT2_LOOKUP;
 
     // villsa [STRIFE] look down key
-    if(gamekeydown[key_lookdown])
+    if(gamekeydown[key_lookdown] || joylook > 0)
         cmd->buttons2 |= BT2_LOOKDOWN;
 
     // villsa [STRIFE] inventory use key
@@ -698,7 +700,7 @@ void G_DoLoadLevel (void)
     // clear cmd building stuff
 
     memset (gamekeydown, 0, sizeof(gamekeydown));
-    joyxmove = joyymove = joystrafemove = 0;
+    joyxmove = joyymove = joystrafemove = joylook = 0;
     mousex = mousey = 0;
     sendpause = sendsave = paused = false;
     memset(mousearray, 0, sizeof(mousearray));
@@ -879,6 +881,7 @@ boolean G_Responder (event_t* ev)
         joyxmove = ev->data2; 
         joyymove = ev->data3; 
         joystrafemove = ev->data4;
+        joylook = ev->data5;
         return true;    // eat events 
 
     default: 
@@ -1931,7 +1934,7 @@ G_InitNew
 ( skill_t       skill,
   int           map ) 
 { 
-    char *skytexturename;
+    const char *skytexturename;
     int             i; 
 
     if (paused) 
@@ -2256,14 +2259,14 @@ void G_BeginRecording (void)
 // G_PlayDemo 
 //
 
-char*	defdemoname; 
+const char	*defdemoname;
  
 //
 // G_DeferedPlayDemo
 //
 // [STRIFE] Verified unmodified
 //
-void G_DeferedPlayDemo (char* name) 
+void G_DeferedPlayDemo(const char *name)
 { 
     defdemoname = name; 
     gameaction = ga_playdemo; 
@@ -2271,7 +2274,7 @@ void G_DeferedPlayDemo (char* name)
 
 // Generate a string describing a demo version
 // [STRIFE] Modified to handle the one and only Strife demo version.
-static char *DemoVersionDescription(int version)
+static const char *DemoVersionDescription(int version)
 {
     static char resultbuf[16];
  
@@ -2323,14 +2326,14 @@ void G_DoPlayDemo (void)
     */
     else
     {
-        char *message = "Demo is from a different game version!\n"
-                        "(read %i, should be %i)\n"
-                        "\n"
-                        "*** You may need to upgrade your version "
-                            "of Strife to v1.1 or later. ***\n"
-                        "    See: https://www.doomworld.com/classicdoom"
-                                  "/info/patches.php\n"
-                        "    This appears to be %s.";
+        const char *message = "Demo is from a different game version!\n"
+                              "(read %i, should be %i)\n"
+                              "\n"
+                              "*** You may need to upgrade your version "
+                                  "of Strife to v1.1 or later. ***\n"
+                              "    See: https://www.doomworld.com/classicdoom"
+                                        "/info/patches.php\n"
+                              "    This appears to be %s.";
 
         I_Error(message, demoversion, STRIFE_VERSION,
                          DemoVersionDescription(demoversion));

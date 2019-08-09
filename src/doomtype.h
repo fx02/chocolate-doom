@@ -21,6 +21,8 @@
 #ifndef __DOOMTYPE__
 #define __DOOMTYPE__
 
+#include "config.h"
+
 #if defined(_MSC_VER) && !defined(__cplusplus)
 #define inline __inline
 #endif
@@ -29,11 +31,15 @@
 // Outside Windows, we use strings.h for str[n]casecmp.
 
 
-#ifdef _WIN32
+#if !HAVE_DECL_STRCASECMP || !HAVE_DECL_STRNCASECMP
 
 #include <string.h>
+#if !HAVE_DECL_STRCASECMP
 #define strcasecmp stricmp
+#endif
+#if !HAVE_DECL_STRNCASECMP
 #define strncasecmp strnicmp
+#endif
 
 #else
 
@@ -59,8 +65,15 @@
 #define PACKEDATTR __attribute__((packed))
 #endif
 
+#define PRINTF_ATTR(fmt, first) __attribute__((format(printf, fmt, first)))
+#define PRINTF_ARG_ATTR(x) __attribute__((format_arg(x)))
+#define NORETURN __attribute__((noreturn))
+
 #else
 #define PACKEDATTR
+#define PRINTF_ATTR(fmt, first)
+#define PRINTF_ARG_ATTR(x)
+#define NORETURN
 #endif
 
 #ifdef __WATCOMC__
@@ -98,6 +111,8 @@ typedef enum
 #endif
 
 typedef uint8_t byte;
+typedef uint8_t pixel_t;
+typedef int16_t dpixel_t;
 
 #include <limits.h>
 

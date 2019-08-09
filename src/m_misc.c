@@ -52,7 +52,7 @@
 // Create a directory
 //
 
-void M_MakeDirectory(char *path)
+void M_MakeDirectory(const char *path)
 {
 #ifdef _WIN32
     mkdir(path);
@@ -63,7 +63,7 @@ void M_MakeDirectory(char *path)
 
 // Check if a file exists
 
-boolean M_FileExists(char *filename)
+boolean M_FileExists(const char *filename)
 {
     FILE *fstream;
 
@@ -86,7 +86,7 @@ boolean M_FileExists(char *filename)
 // Check if a file exists by probing for common case variation of its filename.
 // Returns a newly allocated string that the caller is responsible for freeing.
 
-char *M_FileCaseExists(char *path)
+char *M_FileCaseExists(const char *path)
 {
     char *path_dup, *filename, *ext;
 
@@ -178,7 +178,7 @@ long M_FileLength(FILE *handle)
 // M_WriteFile
 //
 
-boolean M_WriteFile(char *name, void *source, int length)
+boolean M_WriteFile(const char *name, const void *source, int length)
 {
     FILE *handle;
     int	count;
@@ -202,7 +202,7 @@ boolean M_WriteFile(char *name, void *source, int length)
 // M_ReadFile
 //
 
-int M_ReadFile(char *name, byte **buffer)
+int M_ReadFile(const char *name, byte **buffer)
 {
     FILE *handle;
     int	count, length;
@@ -217,13 +217,14 @@ int M_ReadFile(char *name, byte **buffer)
 
     length = M_FileLength(handle);
     
-    buf = Z_Malloc (length, PU_STATIC, NULL);
+    buf = Z_Malloc (length + 1, PU_STATIC, NULL);
     count = fread(buf, 1, length, handle);
     fclose (handle);
 	
     if (count < length)
 	I_Error ("Couldn't read file %s", name);
 		
+    buf[length] = '\0';
     *buffer = buf;
     return length;
 }
@@ -233,9 +234,9 @@ int M_ReadFile(char *name, byte **buffer)
 //
 // The returned value must be freed with Z_Free after use.
 
-char *M_TempFile(char *s)
+char *M_TempFile(const char *s)
 {
-    char *tempdir;
+    const char *tempdir;
 
 #ifdef _WIN32
 
@@ -264,10 +265,49 @@ boolean M_StrToInt(const char *str, int *result)
         || sscanf(str, " %d", result) == 1;
 }
 
-void M_ExtractFileBase(char *path, char *dest)
+// Returns the directory portion of the given path, without the trailing
+// slash separator character. If no directory is described in the path,
+// the string "." is returned. In either case, the result is newly allocated
+// and must be freed by the caller after use.
+char *M_DirName(const char *path)
 {
-    char *src;
-    char *filename;
+    char *p, *result;
+
+    p = strrchr(path, DIR_SEPARATOR);
+    if (p == NULL)
+    {
+        return M_StringDuplicate(".");
+    }
+    else
+    {
+        result = M_StringDuplicate(path);
+        result[p - path] = '\0';
+        return result;
+    }
+}
+
+// Returns the base filename described by the given path (without the
+// directory name). The result points inside path and nothing new is
+// allocated.
+const char *M_BaseName(const char *path)
+{
+    const char *p;
+
+    p = strrchr(path, DIR_SEPARATOR);
+    if (p == NULL)
+    {
+        return path;
+    }
+    else
+    {
+        return p + 1;
+    }
+}
+
+void M_ExtractFileBase(const char *path, char *dest)
+{
+    const char *src;
+    const char *filename;
     int length;
 
     src = path + strlen(path) - 1;
@@ -343,7 +383,7 @@ void M_ForceLowercase(char *text)
 // Case-insensitive version of strstr()
 //
 
-char *M_StrCaseStr(char *haystack, char *needle)
+const char *M_StrCaseStr(const char *haystack, const char *needle)
 {
     unsigned int haystack_len;
     unsigned int needle_len;
@@ -384,7 +424,7 @@ char *M_StringDuplicate(const char *orig)
 
     if (result == NULL)
     {
-        I_Error("Failed to duplicate string (length %i)\n",
+        I_Error("Failed to duplicate string (length %" PRIuPTR ")\n",
                 strlen(orig));
     }
 
@@ -495,7 +535,7 @@ boolean M_StringConcat(char *dest, const char *src, size_t dest_size)
 
 boolean M_StringStartsWith(const char *s, const char *prefix)
 {
-    return strlen(s) > strlen(prefix)
+    return strlen(s) >= strlen(prefix)
         && strncmp(s, prefix, strlen(prefix)) == 0;
 }
 

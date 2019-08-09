@@ -453,7 +453,7 @@ typedef struct player_s
     int refire;                 // refired shots are less accurate
 
     int killcount, itemcount, secretcount;      // for intermission
-    char *message;              // hint messages
+    const char *message;        // hint messages
     int messageTics;            // counter for showing messages
     int damagecount, bonuscount;        // for screen flashing
     int flamecount;             // for flame thrower duration
@@ -553,6 +553,7 @@ extern ticcmd_t *netcmds;
 extern mapthing_t *deathmatch_p;
 extern mapthing_t deathmatchstarts[10];
 extern mapthing_t playerstarts[MAXPLAYERS];
+extern boolean playerstartsingame[MAXPLAYERS];
 
 extern int mouseSensitivity;
 
@@ -588,7 +589,7 @@ extern int vanilla_demo_limit;
 void D_DoomMain(void);
 void IncThermo(void);
 void InitThermo(int max);
-void tprintf(char *string, int initflag);
+void tprintf(const char *string, int initflag);
 // not a globally visible function, just included for source reference
 // calls all startup code
 // parses command line options
@@ -651,7 +652,7 @@ void G_DeferedInitNew(skill_t skill, int episode, int map);
 // can be called by the startup code or M_Responder
 // a normal game starts at map 1, but a warp test can start elsewhere
 
-void G_DeferedPlayDemo(char *demo);
+void G_DeferedPlayDemo(const char *demo);
 
 void G_LoadGame(char *name);
 // can be called by the startup code or M_Responder
@@ -751,10 +752,10 @@ void R_DrawTopBorder(void);
 void R_SetViewSize(int blocks, int detail);
 // called by M_Responder
 
-int R_FlatNumForName(char *name);
+int R_FlatNumForName(const char *name);
 
-int R_TextureNumForName(char *name);
-int R_CheckTextureNumForName(char *name);
+int R_TextureNumForName(const char *name);
+int R_CheckTextureNumForName(const char *name);
 // called by P_Ticker for switches and animations
 // returns the texture number for the texture name
 
@@ -818,10 +819,10 @@ void MN_DeactivateMenu(void);
 boolean MN_Responder(event_t * event);
 void MN_Ticker(void);
 void MN_Drawer(void);
-void MN_DrTextA(char *text, int x, int y);
-int MN_TextAWidth(char *text);
-void MN_DrTextB(char *text, int x, int y);
-int MN_TextBWidth(char *text);
+void MN_DrTextA(const char *text, int x, int y);
+int MN_TextAWidth(const char *text);
+void MN_DrTextB(const char *text, int x, int y);
+int MN_TextBWidth(const char *text);
 
 #include "sounds.h"
 

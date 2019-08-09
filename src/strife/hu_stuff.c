@@ -24,6 +24,7 @@
 #include "z_zone.h"
 
 #include "deh_main.h"
+#include "i_input.h"
 #include "i_swap.h"
 #include "i_video.h"
 
@@ -120,7 +121,7 @@ static boolean hu_setting_name = false;
 // haleyjd 08/31/10: [STRIFE] Changed for Strife level names.
 // List of names for levels.
 
-char *mapnames[] =
+const char *mapnames[] =
 {
     // Strife map names
 
@@ -213,7 +214,7 @@ void HU_Stop(void)
 void HU_Start(void)
 {
     int         i;
-    char*       s;
+    const char *s;
 
     // haleyjd 20120211: [STRIFE] not called here.
     //if (headsupactive)
@@ -312,12 +313,12 @@ void HU_Erase(void)
 //
 //  Fastcall Registers:   edx          ebx
 //      Temp Registers:   esi          edi
-void HU_addMessage(char *prefix, char *message)
+static void HU_addMessage(const char *prefix, const char *message)
 {
     char  c;         // eax
     int   width = 0; // edx
-    char *rover1;    // ebx (in first loop)
-    char *rover2;    // ecx (in second loop)
+    const char *rover1;    // ebx (in first loop)
+    const char *rover2;    // ecx (in second loop)
     char *bufptr;    // ebx (in second loop)
     char buffer[HU_MAXLINELENGTH+2];  // esp+52h
 
@@ -514,6 +515,19 @@ char HU_dequeueChatChar(void)
     return c;
 }
 
+// fraggle 01/05/15: New functions to support the Chocolate input interface.
+static void StartChatInput(void)
+{
+    chat_on = true;
+    I_StartTextInput(HU_INPUTX, HU_INPUTY, SCREENWIDTH, HU_INPUTY + 8);
+}
+
+static void StopChatInput(void)
+{
+    chat_on = false;
+    I_StopTextInput();
+}
+
 //
 // HU_Responder
 //
@@ -563,7 +577,8 @@ boolean HU_Responder(event_t *ev)
         }
         else if (netgame && ev->data2 == key_multi_msg)
         {
-            eatkey = chat_on = true;
+            StartChatInput();
+            eatkey = true;
             HUlib_resetIText(&w_chat);
             HU_queueChatChar(HU_BROADCAST);
         }
@@ -572,7 +587,7 @@ boolean HU_Responder(event_t *ev)
     }
     else
     {
-        c = ev->data2;
+        c = ev->data3;
         // send a macro
         if (altdown)
         {
@@ -591,7 +606,7 @@ boolean HU_Responder(event_t *ev)
             HU_queueChatChar(KEY_ENTER);
 
             // leave chat mode and notify that it was sent
-            chat_on = false;
+            StopChatInput();
             M_StringCopy(lastmessage, chat_macros[c], sizeof(lastmessage));
             plr->message = lastmessage;
             eatkey = true;
@@ -610,7 +625,7 @@ boolean HU_Responder(event_t *ev)
                 // slightly different than vanilla, to allow keys to be customized
                 for(i = 0; i < MAXPLAYERS; i++)
                 {
-                    if(c == key_multi_msgplayer[i])
+                    if (ev->data1 == key_multi_msgplayer[i])
                         break;
                 }
                 if(i < MAXPLAYERS)
@@ -658,7 +673,7 @@ boolean HU_Responder(event_t *ev)
 
             if (c == KEY_ENTER)
             {
-                chat_on = false;
+                StopChatInput();
                 if (w_chat.l.len)
                 {
                     // [STRIFE]: name setting
@@ -682,7 +697,9 @@ boolean HU_Responder(event_t *ev)
                 }
             }
             else if (c == KEY_ESCAPE)
-                chat_on = false;
+            {
+                StopChatInput();
+            }
         }
     }
 

@@ -21,20 +21,19 @@
 #include "deh_str.h"
 #include "i_swap.h"
 #include "i_video.h"
-#include "i_scale.h"
 #include "s_sound.h"
 #include "v_video.h"
 
-int finalestage;                // 0 = text, 1 = art screen
-int finalecount;
+static int finalestage;                // 0 = text, 1 = art screen
+static int finalecount;
 
 #define TEXTSPEED       3
 #define TEXTWAIT        250
 
-char *finaletext;
-char *finaleflat;
+static const char *finaletext;
+static const char *finaleflat;
 
-int FontABaseLump;
+static int FontABaseLump;
 
 extern boolean automapactive;
 extern boolean viewactive;
@@ -157,7 +156,7 @@ void F_TextWrite(void)
     byte *src, *dest;
     int x, y;
     int count;
-    char *ch;
+    const char *ch;
     int c;
     int cx, cy;
     patch_t *w;
@@ -299,7 +298,7 @@ void F_DrawUnderwater(void)
 {
     static boolean underwawa = false;
     extern boolean askforquit;
-    char *lumpname;
+    const char *lumpname;
     byte *palette;
 
     // The underwater screen has its own palette, which is rather annoying.
@@ -317,7 +316,6 @@ void F_DrawUnderwater(void)
                 lumpname = DEH_String("E2PAL");
                 palette = W_CacheLumpName(lumpname, PU_STATIC);
                 I_SetPalette(palette);
-                I_ResetScaleTables(palette);
                 W_ReleaseLumpName(lumpname);
                 V_DrawRawScreen(W_CacheLumpName(DEH_String("E2END"), PU_CACHE));
             }
@@ -332,7 +330,6 @@ void F_DrawUnderwater(void)
                 lumpname = DEH_String("PLAYPAL");
                 palette = W_CacheLumpName(lumpname, PU_STATIC);
                 I_SetPalette(palette);
-                I_ResetScaleTables(palette);
                 W_ReleaseLumpName(lumpname);
                 underwawa = false;
             }
