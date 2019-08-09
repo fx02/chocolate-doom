@@ -1,14 +1,14 @@
-AC_INIT(Chocolate Doom, 3.0.0,
-        chocolate-doom-dev-list@chocolate-doom.org, chocolate-doom)
+AC_INIT(Competition Doom, 3.0.0,
+        cndoom@doom.com.hr, cndoom)
 
 PACKAGE_SHORTNAME=${PACKAGE_NAME% Doom}
 PACKAGE_SHORTDESC="Conservative source port"
-PACKAGE_COPYRIGHT="Copyright (C) 1993-2018"
+PACKAGE_COPYRIGHT="Copyright (C) 2011-2019"
 PACKAGE_LICENSE="GNU General Public License, version 2"
-PACKAGE_MAINTAINER="Simon Howard"
-PACKAGE_URL="https://www.chocolate-doom.org/"
-PACKAGE_RDNS="org.chocolate_doom"
-PACKAGE_ISSUES="https://github.com/chocolate-doom/chocolate-doom/issues"
+PACKAGE_MAINTAINER="Zvonimir Buzanic"
+PACKAGE_URL="https://doom.com.hr/"
+PACKAGE_RDNS="org.cndoom"
+PACKAGE_ISSUES="https://github.com/fx02/cndoom/issues"
 
 AC_CONFIG_AUX_DIR(autotools)
 AC_CANONICAL_HOST
@@ -119,7 +119,8 @@ dnl Without a hyphen. This is used for the bash-completion scripts.
 PROGRAM_SPREFIX=$(echo $PACKAGE_SHORTNAME | tr A-Z a-z)
 
 dnl With a hyphen, used almost everywhere else.
-PROGRAM_PREFIX=${PROGRAM_SPREFIX}-
+dnl cndoom: We can't use $PROGRAM_SPREFIX- here since we wan't to name our executables cndoom, cnheretic, etc.
+PROGRAM_PREFIX=cn
 
 AC_SUBST(PROGRAM_PREFIX)
 AC_DEFINE_UNQUOTED(PROGRAM_PREFIX, "$PROGRAM_PREFIX",
