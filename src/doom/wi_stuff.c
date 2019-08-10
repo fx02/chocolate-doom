@@ -45,6 +45,9 @@
 
 #include "wi_stuff.h"
 
+// cndoom, include cn_timer.h
+#include "cn_timer.h"
+
 //
 // Data needed to add patches to full screen intermission pics.
 // Patches are statistics messages, and animations.
@@ -343,12 +346,18 @@ static patch_t*		yah[3] = { NULL, NULL, NULL };
 // splat
 static patch_t*		splat[2] = { NULL, NULL };
 
+// cndoom, colon and 0-9 needed in cn_timer.c
+// so they are not static anymore, wi prefix added to names
+
 // %, : graphics
-static patch_t*		percent;
-static patch_t*		colon;
+// cndoom, default percent
+static patch_t*		wipercent;
+// cndoom, default static colon
+patch_t*		wicolon;
 
 // 0-9 graphic
-static patch_t*		num[10];
+// cndoom, default static num
+patch_t*		winum[10];
 
 // minus sign
 static patch_t*		wiminus;
@@ -633,7 +642,8 @@ WI_drawNum
   int		digits )
 {
 
-    int		fontwidth = SHORT(num[0]->width);
+    // cndoom, default num
+    int		fontwidth = SHORT(winum[0]->width);
     int		neg;
     int		temp;
 
@@ -670,7 +680,8 @@ WI_drawNum
     while (digits--)
     {
 	x -= fontwidth;
-	V_DrawPatch(x, y, num[ n % 10 ]);
+	// cndoom, default num
+	V_DrawPatch(x, y, winum[ n % 10 ]);
 	n /= 10;
     }
 
@@ -691,7 +702,8 @@ WI_drawPercent
     if (p < 0)
 	return;
 
-    V_DrawPatch(x, y, percent);
+    // cndoom, default percent
+    V_DrawPatch(x, y, wipercent);
     WI_drawNum(x, y, p, -1);
 }
 
@@ -721,12 +733,14 @@ WI_drawTime
 	do
 	{
 	    n = (t / div) % 60;
-	    x = WI_drawNum(x, y, n, 2) - SHORT(colon->width);
+	    // cndoom, default colon
+	    x = WI_drawNum(x, y, n, 2) - SHORT(wicolon->width);
 	    div *= 60;
 
 	    // draw
 	    if (div==60 || t / div)
-		V_DrawPatch(x, y, colon);
+		// cndoom, default colon
+		V_DrawPatch(x, y, wicolon);
 	    
 	} while (t / div);
     }
@@ -772,6 +786,13 @@ static boolean		snl_pointeron = false;
 
 void WI_initShowNextLoc(void)
 {
+    // cndoom, exit intermission here if ExM8 in Doom 1
+    // so recording Doom 1 movie is possible
+    if (gamemode != commercial && gamemap == 8)
+    {
+	G_WorldDone();
+	return;
+    }
     state = ShowNextLoc;
     acceleratestage = 0;
     cnt = SHOWNEXTLOCDELAY * TICRATE;
@@ -1062,7 +1083,8 @@ void WI_drawDeathmatchStats(void)
 
     // draw stats
     y = DM_MATRIXY+10;
-    w = SHORT(num[0]->width);
+    // cndoom, default num
+    w = SHORT(winum[0]->width);
 
     for (i=0 ; i<MAXPLAYERS ; i++)
     {
@@ -1275,7 +1297,8 @@ void WI_drawNetgameStats(void)
     int		i;
     int		x;
     int		y;
-    int		pwidth = SHORT(percent->width);
+    // cndoom, default percent
+    int		pwidth = SHORT(wipercent->width);
 
     WI_slamBackground();
     
@@ -1297,6 +1320,12 @@ void WI_drawNetgameStats(void)
     if (dofrags)
 	V_DrawPatch(NG_STATSX+4*NG_SPACINGX-SHORT(frags->width),
 		    NG_STATSY, frags);
+
+    // cndoom, draw timer for NET games
+    V_DrawPatch(SP_TIMEX, SP_TIMEY, timepatch);
+    CN_DrawIntermissionTime (SCREENWIDTH/2-SP_TIMEX+16 /* + 2*SHORT(winum[0]->width) + SHORT(wicolon->width) */,
+			     SP_TIMEY /* + SHORT(timepatch->height) */,
+			     plrs[me].stime);
 
     // draw stats
     y = NG_STATSY + SHORT(kills->height);
@@ -1450,7 +1479,8 @@ void WI_drawStats(void)
     // line height
     int lh;	
 
-    lh = (3*SHORT(num[0]->height))/2;
+    // cndoom, default num
+    lh = (3*SHORT(winum[0]->height))/2;
 
     WI_slamBackground();
 
@@ -1468,8 +1498,18 @@ void WI_drawStats(void)
     V_DrawPatch(SP_STATSX, SP_STATSY+2*lh, sp_secret);
     WI_drawPercent(SCREENWIDTH - SP_STATSX, SP_STATSY+2*lh, cnt_secret[0]);
 
+    // cndoom, show new timer
+    /*
     V_DrawPatch(SP_TIMEX, SP_TIMEY, timepatch);
     WI_drawTime(SCREENWIDTH/2 - SP_TIMEX, SP_TIMEY, cnt_time);
+    */
+    V_DrawPatch(SP_TIMEX, SP_TIMEY, timepatch);
+    if (sp_state >= 8)
+    {
+	CN_DrawIntermissionTime (SCREENWIDTH/2-SP_TIMEX+16 /* + 2*SHORT(winum[0]->width) + SHORT(wicolon->width) */,
+				 SP_TIMEY /* + SHORT(timepatch->height) */,
+				 plrs[me].stime);
+    }
 
     if (wbs->epsd < 3)
     {
@@ -1619,11 +1659,13 @@ static void WI_loadUnloadData(load_callback_t callback)
     {
 	 // numbers 0-9
 	DEH_snprintf(name, 9, "WINUM%d", i);
-        callback(name, &num[i]);
+        // cndoom, default num
+        callback(name, &winum[i]);
     }
 
     // percent sign
-    callback(DEH_String("WIPCNT"), &percent);
+    // cndoom, default percent
+    callback(DEH_String("WIPCNT"), &wipercent);
 
     // "finished"
     callback(DEH_String("WIF"), &finished);
@@ -1656,7 +1698,8 @@ static void WI_loadUnloadData(load_callback_t callback)
     callback(DEH_String("WIFRGS"), &frags);
 
     // ":"
-    callback(DEH_String("WICOLON"), &colon);
+    // cndoom, default colon
+    callback(DEH_String("WICOLON"), &wicolon);
 
     // "time"
     callback(DEH_String("WITIME"), &timepatch);

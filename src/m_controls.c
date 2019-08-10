@@ -38,6 +38,14 @@ int key_use = ' ';
 int key_strafe = KEY_RALT;
 int key_speed = KEY_RSHIFT; 
 
+// cndoom, config variables
+int cn_timer_enabled        = 1;
+int cn_timer_offset_x       = -1;
+int cn_timer_offset_y       = 0;
+int cn_timer_color_index    = 168;
+int cn_timer_shadow_index   = 0;
+int cn_timer_bg_colormap    = 16;
+
 // 
 // Heretic keyboard controls
 //
@@ -217,6 +225,14 @@ void M_BindBaseControls(void)
     M_BindIntVariable("key_use",            &key_use);
     M_BindIntVariable("key_strafe",         &key_strafe);
     M_BindIntVariable("key_speed",          &key_speed);
+
+    // cndoom
+    M_BindIntVariable("cn_timer_enabled",          &cn_timer_enabled);
+    M_BindIntVariable("cn_timer_bg_colormap",      &cn_timer_bg_colormap);
+    M_BindIntVariable("cn_timer_offset_x",         &cn_timer_offset_x);
+    M_BindIntVariable("cn_timer_offset_y",         &cn_timer_offset_y);
+    M_BindIntVariable("cn_timer_color_index",      &cn_timer_color_index);
+    M_BindIntVariable("cn_timer_shadow_index",     &cn_timer_shadow_index);
 
     M_BindIntVariable("mouseb_fire",        &mousebfire);
     M_BindIntVariable("mouseb_strafe",      &mousebstrafe);

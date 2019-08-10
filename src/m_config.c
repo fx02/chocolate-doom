@@ -1630,6 +1630,157 @@ static default_t extra_defaults_list[] =
     CONFIG_VARIABLE_KEY(key_multi_msgplayer4),
 
     //!
+
+    //!
+    // @game doom heretic
+    //
+    // Display ingame/intermission screen timer
+    // 0 - No. 1 - Yes (Default)
+
+    CONFIG_VARIABLE_INT(cn_timer_enabled),
+
+    //!
+    // @game doom heretic
+    //
+    // Timer X position
+    // Default: -1
+
+    CONFIG_VARIABLE_INT(cn_timer_offset_x),
+
+    //!
+    // @game doom heretic
+    //
+    // Timer Y position
+    // Default: 0
+
+    CONFIG_VARIABLE_INT(cn_timer_offset_y),
+
+    //!
+    // @game doom heretic
+    //
+    // Timer color
+    // 0 - 255 (Default:168)
+
+    CONFIG_VARIABLE_INT(cn_timer_color_index),
+
+    //!
+    // @game doom heretic
+    //
+    // Shadow for timer
+    // 0 - No (Default). 1 - Yes
+
+    CONFIG_VARIABLE_INT(cn_timer_shadow_index),
+
+    //!
+    // @game doom heretic
+    //
+    // Backgroung color for timer
+    // 0 - 255 (Default:16)
+
+    CONFIG_VARIABLE_INT(cn_timer_bg_colormap),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //!
     // @game hexen strife
     //
     // Key to send a message to player 5 during multiplayer games.

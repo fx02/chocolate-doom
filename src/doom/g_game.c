@@ -150,6 +150,13 @@ wbstartstruct_t wminfo;               	// parms for world map / intermission
  
 byte		consistancy[MAXPLAYERS][BACKUPTICS]; 
  
+// cndoom, all level times are saved here on map completion for later use,
+// also keep track of total time spent on all levels so far.
+#define MAXLEVELTIMES 34
+int leveltimes[MAXLEVELTIMES];
+int totaltime;
+int ki, it, se;
+
 #define MAXPLMOVE		(forwardmove[1]) 
  
 #define TURBOTHRESHOLD	0x32
@@ -1499,7 +1506,7 @@ void G_DoCompleted (void)
     automapactive = false; 
 
     StatCopy(&wminfo);
- 
+
     WI_Start (&wminfo); 
 } 
 
@@ -1744,6 +1751,8 @@ G_InitNew
 {
     const char *skytexturename;
     int             i;
+    // cndoom, clear leveltimes
+    memset (leveltimes, 0, sizeof(int)*MAXLEVELTIMES);
 
     if (paused)
     {
