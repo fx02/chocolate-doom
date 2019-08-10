@@ -40,7 +40,8 @@
 
 #include "doomstat.h"
 
-
+// cndoom, include cn_timer.h
+#include "cn_timer.h"
 void	P_SpawnMapThing (mapthing_t*	mthing);
 
 
@@ -822,6 +823,8 @@ P_SetupLevel
     maplumpinfo = lumpinfo[lumpnum];
 
     leveltime = 0;
+    //cndoom, reset timer
+    CN_ResetTimer();
 	
     // note: most of this ordering is important	
     P_LoadBlockMap (lumpnum+ML_BLOCKMAP);

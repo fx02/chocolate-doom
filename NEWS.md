@@ -4,4 +4,9 @@
   See Chocolate Doom 3.0 history for changes:
   https://github.com/chocolate-doom/chocolate-doom
   Imported most of v2 Competition features into v3:
-  - TODO
+  - naming, icons & settings
+  - in game & end screen timer, novert always on
+  IN PROGRESS/TODO:
+  - recording episode
+  - demo metadata
+  - competition setup menu

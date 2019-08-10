@@ -6,6 +6,7 @@ noinst_LIBRARIES=libdoom.a
 
 libdoom_a_SOURCES =             \
 am_map.c           am_map.h     \
+cn_timer.c         cn_timer.h   \
 deh_ammo.c                      \
 deh_bexstr.c                    \
 deh_cheat.c                     \
