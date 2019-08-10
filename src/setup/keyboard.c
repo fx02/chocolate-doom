@@ -27,9 +27,11 @@
 
 #define WINDOW_HELP_URL "https://www.chocolate-doom.org/setup-keyboard"
 
-int vanilla_keyboard_mapping = 1;
+// cndoom, default 1
+int vanilla_keyboard_mapping = 0;
 
-static int always_run = 0;
+// cndoom, default 0
+static int always_run = 1;
 
 // Keys within these groups cannot have the same value.
 

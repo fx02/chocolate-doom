@@ -2306,7 +2306,8 @@ boolean G_CheckDemoStatus (void)
 	M_WriteFile (demoname, demobuffer, demo_p - demobuffer); 
 	Z_Free (demobuffer); 
 	demorecording = false; 
-	I_Error ("Demo %s recorded",demoname); 
+	// cndoom, disable popup after recording demo
+	//I_Error ("Demo %s recorded",demoname); 
     } 
 	 
     return false; 

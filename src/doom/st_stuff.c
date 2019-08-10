@@ -528,8 +528,12 @@ ST_Responder (event_t* ev)
 	{
 	  musnum = mus_runnin + (buf[0]-'0')*10 + buf[1]-'0' - 1;
 	  
+	  // crispy, cndoom, prevent crash with IDMUS00, default
+	/*
 	  if (((buf[0]-'0')*10 + buf[1]-'0') > 35
        && gameversion >= exe_doom_1_8)
+	*/
+	  if (musnum < mus_runnin || musnum >= NUMMUSIC)
 	    plyr->message = DEH_String(STSTR_NOMUS);
 	  else
 	    S_ChangeMusic(musnum, 1);
@@ -538,7 +542,11 @@ ST_Responder (event_t* ev)
 	{
 	  musnum = mus_e1m1 + (buf[0]-'1')*9 + (buf[1]-'1');
 	  
-	  if (((buf[0]-'1')*9 + buf[1]-'1') > 31)
+	  // crispy, cndoom, prevent crash with IDMUS0x or IDMUSx0, default
+	  //if (((buf[0]-'1')*9 + buf[1]-'1') > 31)
+	  if (musnum < mus_e1m1 || musnum >= mus_runnin ||
+	      // crispy, cndoom, support dedicated music tracks for the 4th episode
+	      S_music[musnum].lumpnum == -1)
 	    plyr->message = DEH_String(STSTR_NOMUS);
 	  else
 	    S_ChangeMusic(musnum, 1);

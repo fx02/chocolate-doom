@@ -133,7 +133,8 @@ anim_t*		lastanim;
 //
 //      Animating line specials
 //
-#define MAXLINEANIMS            64
+// cndoom, default 64 
+#define MAXLINEANIMS            16384
 
 extern  short	numlinespecials;
 extern  line_t*	linespeciallist[MAXLINEANIMS];

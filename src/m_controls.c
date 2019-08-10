@@ -181,7 +181,8 @@ int key_menu_screenshot = 0;
 int joybfire = 0;
 int joybstrafe = 1;
 int joybuse = 3;
-int joybspeed = 2;
+// cndoom, default 2
+int joybspeed = 29;
 
 int joybstrafeleft = -1;
 int joybstraferight = -1;
@@ -197,7 +198,8 @@ int joybautomap = -1;
 // Control whether if a mouse button is double clicked, it acts like 
 // "use" has been pressed
 
-int dclick_use = 1;
+// cndoom, default 1
+int dclick_use = 0;
  
 // 
 // Bind all of the common controls used by Doom and all other games.
