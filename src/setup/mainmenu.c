@@ -37,6 +37,8 @@
 #include "mouse.h"
 #include "multiplayer.h"
 #include "sound.h"
+// cndoom, include
+#include "competition.h"
 
 #define WINDOW_HELP_URL "https://www.chocolate-doom.org/setup"
 
@@ -226,6 +228,8 @@ void MainMenu(void)
                        (TxtWidgetSignalFunc) ConfigMouse, NULL),
         TXT_NewButton2("Configure Gamepad/Joystick",
                        (TxtWidgetSignalFunc) ConfigJoystick, NULL),
+        TXT_NewButton2("Competition",
+                       (TxtWidgetSignalFunc) ConfigCompetition, NULL),
         TXT_NewButton2("Compatibility",
                        (TxtWidgetSignalFunc) CompatibilitySettings, NULL),
         GetLaunchButton(),

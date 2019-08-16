@@ -76,8 +76,9 @@
 
 #include "d_main.h"
 
-// cndoom, include cn_timer.h :)
+// cndoom, includes
 #include "cn_timer.h"
+#include "cn_meta.h"
 
 //
 // D-DoomLoop()
@@ -352,6 +353,8 @@ void D_BindVariables(void)
     M_BindMapControls();
     M_BindMenuControls();
     M_BindChatControls(MAXPLAYERS);
+    // cndoom, meta binds
+    CN_BindMetaVariables();
 
     key_multi_msgplayer[0] = HUSTR_KEYGREEN;
     key_multi_msgplayer[1] = HUSTR_KEYINDIGO;

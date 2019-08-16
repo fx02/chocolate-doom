@@ -21,6 +21,8 @@
 #include "mode.h"
 
 #include "compatibility.h"
+// cndoom, include
+#include "m_controls.h"
 
 #define WINDOW_HELP_URL "https://www.chocolate-doom.org/setup-compat"
 
@@ -32,12 +34,19 @@ int vanilla_demo_limit = 0;
 void CompatibilitySettings(TXT_UNCAST_ARG(widget), void *user_data)
 {
     txt_window_t *window;
-
+    // cndoom, start
     window = TXT_NewWindow("Compatibility");
 
     TXT_SetWindowHelpURL(window, WINDOW_HELP_URL);
 
     TXT_AddWidgets(window,
+                   TXT_NewSeparator("Demo playback and ingame timer"),
+           TXT_NewCheckBox("Show \"Secret is revealed!\" message",
+                                   &cn_secret_message),
+           TXT_NewCheckBox("Show ingame timer",
+                                   &cn_timer_enabled),
+    // cndoom, end
+                   TXT_NewSeparator("Compatibility"),
                    TXT_NewCheckBox("Vanilla savegame limit",
                                    &vanilla_savegame_limit),
                    TXT_NewCheckBox("Vanilla demo limit",

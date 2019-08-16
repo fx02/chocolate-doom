@@ -7,6 +7,7 @@ noinst_LIBRARIES = libsetup.a
 
 libsetup_a_SOURCES =                            \
     compatibility.c   compatibility.h           \
+    competition.c     competition.h             \
     display.c         display.h                 \
     joystick.c        joystick.h                \
     keyboard.c        keyboard.h                \

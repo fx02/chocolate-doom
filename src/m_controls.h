@@ -16,6 +16,11 @@
 
 #ifndef __M_CONTROLS_H__
 #define __M_CONTROLS_H__
+
+// cndoom, controls and binds
+extern int cn_secret_message;
+extern int key_strafe_alt;
+extern char *cn_meta_id;
  
 extern int key_right;
 extern int key_left;

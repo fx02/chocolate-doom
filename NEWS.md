@@ -8,13 +8,17 @@
   - naming, icons & settings
   - in game & end screen timer, novert always on
   - show stats screen after EXM8
-  - enable recording Doom movie
+  - enable Doom movie recording
   - using -printstats & -record outputs stats to stats.txt
-
-  IN PROGRESS/TODO:
   - demo metadata
   - competition setup menu
+  - alternate strafe key
+
+  IN PROGRESS/TODO:
   - high resolution
 
   BUGS:
  - if demo filename is longer than 256 chars it won't be not recorded
+ - weird artefact with timer in top left corner
+ - demo metadata version is a bit bugged
+ - cnlauncher does not play demos properly

@@ -1630,6 +1630,36 @@ static default_t extra_defaults_list[] =
     CONFIG_VARIABLE_KEY(key_multi_msgplayer4),
 
     //!
+    // @game hexen strife
+    //
+    // Key to send a message to player 5 during multiplayer games.
+    //
+
+    CONFIG_VARIABLE_KEY(key_multi_msgplayer5),
+
+    //!
+    // @game hexen strife
+    //
+    // Key to send a message to player 6 during multiplayer games.
+    //
+
+    CONFIG_VARIABLE_KEY(key_multi_msgplayer6),
+
+    //!
+    // @game hexen strife
+    //
+    // Key to send a message to player 7 during multiplayer games.
+    //
+
+    CONFIG_VARIABLE_KEY(key_multi_msgplayer7),
+
+    //!
+    // @game hexen strife
+    //
+    // Key to send a message to player 8 during multiplayer games.
+    //
+
+    CONFIG_VARIABLE_KEY(key_multi_msgplayer8),
 
     //!
     // @game doom heretic
@@ -1680,36 +1710,27 @@ static default_t extra_defaults_list[] =
     CONFIG_VARIABLE_INT(cn_timer_bg_colormap),
 
     //!
-    // @game hexen strife
+    // @game doom heretic
     //
-    // Key to send a message to player 5 during multiplayer games.
-    //
+    // alternate strafe ON key for second SR50 combination
+    // (Default:x)
 
-    CONFIG_VARIABLE_KEY(key_multi_msgplayer5),
-
-    //!
-    // @game hexen strife
-    //
-    // Key to send a message to player 6 during multiplayer games.
-    //
-
-    CONFIG_VARIABLE_KEY(key_multi_msgplayer6),
+    CONFIG_VARIABLE_KEY(key_strafe_alt),
 
     //!
-    // @game hexen strife
+    // @game doom heretic
     //
-    // Key to send a message to player 7 during multiplayer games.
-    //
+    // Show a message when a secret is found only in demo playback.
+    // Default: 0
 
-    CONFIG_VARIABLE_KEY(key_multi_msgplayer7),
+    CONFIG_VARIABLE_INT(cn_secret_message),
 
     //!
-    // @game hexen strife
-    //
-    // Key to send a message to player 8 during multiplayer games.
-    //
+    // Competition Doom ID
+    // You have to register on forum and request ID:
+    // https://www.doom.com.hr/forum/viewtopic.php?f=12&t=436
 
-    CONFIG_VARIABLE_KEY(key_multi_msgplayer8),
+    CONFIG_VARIABLE_STRING(cn_meta_id),
 };
 
 static default_collection_t extra_defaults =

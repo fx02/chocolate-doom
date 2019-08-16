@@ -22,6 +22,9 @@
 #include "m_config.h"
 #include "m_misc.h"
 
+// cndoom, include
+#include "doom/cn_meta.h"
+
 //
 // Keyboard controls
 //
@@ -45,6 +48,9 @@ int cn_timer_offset_y       = 0;
 int cn_timer_color_index    = 168;
 int cn_timer_shadow_index   = 0;
 int cn_timer_bg_colormap    = 16;
+int cn_secret_message       = 0;
+int key_strafe_alt          = 'x';
+char *cn_meta_id            = "0";
 
 // 
 // Heretic keyboard controls
@@ -233,6 +239,9 @@ void M_BindBaseControls(void)
     M_BindIntVariable("cn_timer_offset_y",         &cn_timer_offset_y);
     M_BindIntVariable("cn_timer_color_index",      &cn_timer_color_index);
     M_BindIntVariable("cn_timer_shadow_index",     &cn_timer_shadow_index);
+    M_BindIntVariable("key_strafe_alt",            &key_strafe_alt),
+    M_BindIntVariable("cn_secret_message",         &cn_secret_message);
+    M_BindStringVariable("cn_meta_id",             &cn_meta_id);
 
     M_BindIntVariable("mouseb_fire",        &mousebfire);
     M_BindIntVariable("mouseb_strafe",      &mousebstrafe);
