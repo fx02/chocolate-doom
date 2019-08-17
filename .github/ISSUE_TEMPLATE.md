@@ -1,5 +1,5 @@
 <!--
-  Thank you for reporting a bug in Chocolate Doom. Please complete
+  Thank you for reporting a bug in Competition Doom. Please complete
   the following template so that we can better diagnose the source
   of your problem.
 
@@ -12,7 +12,7 @@
 
 ### Background
 
-Version of Chocolate Doom:
+Version of Competition Doom:
 
 Operating System and version:
 
