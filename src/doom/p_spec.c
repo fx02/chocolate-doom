@@ -47,6 +47,9 @@
 // Data.
 #include "sounds.h"
 
+// cndoom, include and define secret message
+#include "m_controls.h"
+#define HUSTR_SECRETFOUND	"A secret is revealed!" 
 
 //
 // Animating textures and planes
@@ -133,7 +136,8 @@ anim_t*		lastanim;
 //
 //      Animating line specials
 //
-#define MAXLINEANIMS            64
+// cndoom, default 64 
+#define MAXLINEANIMS            16384
 
 extern  short	numlinespecials;
 extern  line_t*	linespeciallist[MAXLINEANIMS];
@@ -1031,6 +1035,8 @@ P_ShootSpecialLine
 void P_PlayerInSpecialSector (player_t* player)
 {
     sector_t*	sector;
+    // cndoom, define
+    extern int showMessages;
 	
     sector = player->mo->subsector->sector;
 
@@ -1069,6 +1075,11 @@ void P_PlayerInSpecialSector (player_t* player)
 			
       case 9:
 	// SECRET SECTOR
+	// cndoom, crispy, show "Secret Revealed!" message
+	if (showMessages && cn_secret_message && demoplayback)
+	{
+	    player->message = HUSTR_SECRETFOUND;
+	}
 	player->secretcount++;
 	sector->special = 0;
 	break;

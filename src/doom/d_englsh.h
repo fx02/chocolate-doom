@@ -302,6 +302,8 @@
 #define HUSTR_TALKTOSELF5	"You've lost it..."
 
 #define HUSTR_MESSAGESENT	"[Message Sent]"
+// cndoom, crispy, define secret message
+#define HUSTR_SECRETFOUND	"A secret is revealed!"
 
 // The following should NOT be changed unless it seems
 // just AWFULLY necessary

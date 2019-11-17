@@ -94,7 +94,8 @@ int usemouse = 1;
 
 // Save screenshots in PNG format.
 
-int png_screenshots = 0;
+// cndoom, default 0
+int png_screenshots = 1;
 
 // SDL video driver name
 
@@ -194,7 +195,8 @@ static unsigned int last_resize_time;
 
 // Gamma correction level to use
 
-int usegamma = 0;
+// cndoom, default 0
+int usegamma = 4;
 
 // Joystick/gamepad hysteresis
 unsigned int joywait = 0;

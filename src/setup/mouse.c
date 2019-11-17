@@ -34,7 +34,8 @@ static float mouse_acceleration = 2.0;
 static int mouse_threshold = 10;
 static int grabmouse = 1;
 
-int novert = 0;
+// cndoom, do not allow vertical movement, default 0
+int novert = 1;
 
 static int *all_mouse_buttons[] = {
     &mousebfire,

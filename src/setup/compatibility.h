@@ -20,5 +20,7 @@ void BindCompatibilityVariables(void);
 
 extern int vanilla_savegame_limit;
 extern int vanilla_demo_limit;
+// cndoom
+extern int cn_timer_enabled;
 
 #endif /* #ifndef SETUP_COMPATIBILITY_H */

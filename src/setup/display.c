@@ -74,12 +74,15 @@ static int fullscreen_width = 0, fullscreen_height = 0;
 static int window_width = 800, window_height = 600;
 static int startup_delay = 1000;
 static int max_scaling_buffer_pixels = 16000000;
-static int usegamma = 0;
+// cndoom, default 0
+static int usegamma = 4;
 
 int graphical_startup = 1;
-int show_endoom = 1;
+// cndoom, default 1
+int show_endoom = 0;
 int show_diskicon = 1;
-int png_screenshots = 0;
+// cndoom, default 0
+int png_screenshots = 1;
 
 static int system_video_env_set;
 

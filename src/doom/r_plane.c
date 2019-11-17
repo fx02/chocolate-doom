@@ -42,14 +42,16 @@ planefunction_t		ceilingfunc;
 //
 
 // Here comes the obnoxious "visplane".
-#define MAXVISPLANES	128
+// cndoom, default 128
+#define MAXVISPLANES	1024
 visplane_t		visplanes[MAXVISPLANES];
 visplane_t*		lastvisplane;
 visplane_t*		floorplane;
 visplane_t*		ceilingplane;
 
 // ?
-#define MAXOPENINGS	SCREENWIDTH*64
+// cndoom, default SCREENWIDTH*64
+#define MAXOPENINGS	65536
 short			openings[MAXOPENINGS];
 short*			lastopening;
 

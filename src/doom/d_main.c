@@ -76,6 +76,10 @@
 
 #include "d_main.h"
 
+// cndoom, includes
+#include "cn_timer.h"
+#include "cn_meta.h"
+
 //
 // D-DoomLoop()
 // Not a globally visible function,
@@ -124,7 +128,8 @@ boolean         main_loop_started = false;
 char		wadfile[1024];		// primary wad file
 char		mapdir[1024];           // directory of development maps
 
-int             show_endoom = 1;
+// cndoom, default 1
+int             show_endoom = 0;
 int             show_diskicon = 1;
 
 
@@ -186,6 +191,11 @@ boolean D_Display (void)
 	R_ExecuteSetViewSize ();
 	oldgamestate = -1;                      // force background redraw
 	borderdrawcount = 3;
+	// cndoom, update timer location if needed
+	if (cn_timer_enabled)
+	{
+	    CN_UpdateTimerLocation(1);
+	}
     }
 
     // save the current screen if about to wipe
@@ -290,6 +300,14 @@ boolean D_Display (void)
     // menus go directly to the screen
     M_Drawer ();          // menu is drawn even on top of everything
     NetUpdate ();         // send out any new accumulation
+    // cndoom, draw timer if neede
+    if (gamestate == GS_LEVEL && !inhelpscreens && !automapactive && !wipe)
+    {
+	if (cn_timer_enabled)
+	{
+	CN_DrawTimer();
+	}
+    }
 
     return wipe;
 }
@@ -335,6 +353,8 @@ void D_BindVariables(void)
     M_BindMapControls();
     M_BindMenuControls();
     M_BindChatControls(MAXPLAYERS);
+    // cndoom, meta binds
+    CN_BindMetaVariables();
 
     key_multi_msgplayer[0] = HUSTR_KEYGREEN;
     key_multi_msgplayer[1] = HUSTR_KEYINDIGO;
@@ -353,6 +373,13 @@ void D_BindVariables(void)
     M_BindIntVariable("vanilla_savegame_limit", &vanilla_savegame_limit);
     M_BindIntVariable("vanilla_demo_limit",     &vanilla_demo_limit);
     M_BindIntVariable("show_endoom",            &show_endoom);
+    // cndoom, variables
+    M_BindIntVariable("cn_timer_enabled",       &cn_timer_enabled);
+    M_BindIntVariable("cn_timer_bg_colormap",   &cn_timer_bg_colormap);
+    M_BindIntVariable("cn_timer_offset_x",      &cn_timer_offset_x);
+    M_BindIntVariable("cn_timer_offset_y",      &cn_timer_offset_y);
+    M_BindIntVariable("cn_timer_color_index",   &cn_timer_color_index);
+    M_BindIntVariable("cn_timer_shadow_index",  &cn_timer_shadow_index);
     M_BindIntVariable("show_diskicon",          &show_diskicon);
 
     // Multiplayer chat macros
@@ -469,6 +496,9 @@ void D_DoomLoop (void)
 
     V_RestoreBuffer();
     R_ExecuteSetViewSize();
+    // cndoom, show timer
+    CN_ResetTimer();
+    CN_UpdateTimerLocation(1); 
 
     D_StartGameLoop();
 
