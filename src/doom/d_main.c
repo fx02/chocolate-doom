@@ -989,6 +989,7 @@ static struct
     const char *cmdline;
     GameVersion_t version;
 } gameversions[] = {
+    {"Doom 1.2",             "1.2",        exe_doom_1_2},
     {"Doom 1.666",           "1.666",      exe_doom_1_666},
     {"Doom 1.7/1.7a",        "1.7",        exe_doom_1_7},
     {"Doom 1.8",             "1.8",        exe_doom_1_8},
@@ -1016,9 +1017,9 @@ static void InitGameVersion(void)
     // @arg <version>
     // @category compat
     //
-    // Emulate a specific version of Doom.  Valid values are "1.666",
-    // "1.7", "1.8", "1.9", "ultimate", "final", "final2", "hacx" and
-    // "chex".
+    // Emulate a specific version of Doom.  Valid values are "1.2", 
+    // "1.666", "1.7", "1.8", "1.9", "ultimate", "final", "final2",
+    // "hacx" and "chex".
     //
 
     p = M_CheckParmWithArgs("-gameversion", 1);
@@ -1081,6 +1082,13 @@ static void InitGameVersion(void)
                     status = true;
                     switch (demoversion)
                     {
+                        case 0:
+                        case 1:
+                        case 2:
+                        case 3:
+                        case 4:
+                            gameversion = exe_doom_1_2;
+                            break;
                         case 106:
                             gameversion = exe_doom_1_666;
                             break;
@@ -1118,6 +1126,12 @@ static void InitGameVersion(void)
 
             gameversion = exe_final;
         }
+    }
+
+    // Deathmatch 2.0 did not exist until Doom v1.4
+    if (gameversion <= exe_doom_1_2 && deathmatch == 2)
+    {
+        deathmatch = 1;
     }
     
     // The original exe does not support retail - 4th episode not supported
@@ -1547,10 +1561,13 @@ void D_DoomMain (void)
 
         // common auto-loaded files for all Doom flavors
 
-        autoload_dir = M_GetAutoloadDir("doom-all");
-        DEH_AutoLoadPatches(autoload_dir);
-        W_AutoLoadWADs(autoload_dir);
-        free(autoload_dir);
+        if (gamemission < pack_chex)
+        {
+            autoload_dir = M_GetAutoloadDir("doom-all");
+            DEH_AutoLoadPatches(autoload_dir);
+            W_AutoLoadWADs(autoload_dir);
+            free(autoload_dir);
+        }
 
         // auto-loaded files per IWAD
 
@@ -1705,18 +1722,6 @@ void D_DoomMain (void)
 
     I_PrintStartupBanner(gamedescription);
     PrintDehackedBanners();
-
-    // Freedoom's IWADs are Boom-compatible, which means they usually
-    // don't work in Vanilla (though FreeDM is okay). Show a warning
-    // message and give a link to the website.
-    if (gamevariant == freedoom)
-    {
-        printf(" WARNING: You are playing using one of the Freedoom IWAD\n"
-               " files, which might not work in this port. See this page\n"
-               " for more information on how to play using Freedoom:\n"
-               "   https://www.chocolate-doom.org/wiki/index.php/Freedoom\n");
-        I_PrintDivider();
-    }
 
     DEH_printf("I_Init: Setting up machine state.\n");
     I_CheckIsScreensaver();
