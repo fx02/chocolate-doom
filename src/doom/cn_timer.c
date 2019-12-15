@@ -252,7 +252,7 @@ void CN_DrawTimer (void)
 
     if (cn_timer_bg_colormap)
     {
-	CN_DimBox (timer_x, timer_y, timer_width, timer_height,
+	CN_DimBox (timer_x, timer_y-1, timer_width, timer_height,
 	  cn_timer_bg_colormap);
     }
 
