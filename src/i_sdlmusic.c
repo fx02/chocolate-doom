@@ -110,11 +110,17 @@ void I_InitTimidityConfig(void)
 
     // Set the TIMIDITY_CFG environment variable to point to the temporary
     // config file.
-
     if (success)
     {
         env_string = M_StringJoin("TIMIDITY_CFG=", temp_timidity_cfg, NULL);
         putenv(env_string);
+        // env_string deliberately not freed; see putenv manpage
+
+        // If we're explicitly configured to use Timidity (either through
+        // timidity_cfg_path or GUS mode), then disable Fluidsynth, because
+        // SDL_mixer considers Fluidsynth a higher priority than Timidity and
+        // therefore can end up circumventing Timidity entirely.
+        putenv("SDL_MIXER_DISABLE_FLUIDSYNTH=1");
     }
     else
     {
@@ -216,7 +222,11 @@ static boolean I_SDL_InitMusic(void)
 
 #if defined(_WIN32)
     // [AM] Start up midiproc to handle playing MIDI music.
-    I_MidiPipe_InitServer();
+    // Don't enable it for GUS, since it handles its own volume just fine.
+    if (snd_musicdevice != SNDDEVICE_GUS)
+    {
+        I_MidiPipe_InitServer();
+    }
 #endif
 
     return music_initialized;

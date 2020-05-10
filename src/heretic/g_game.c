@@ -447,11 +447,57 @@ void G_BuildTiccmd(ticcmd_t *cmd, int maketic)
             }
         }
     }
-    if (gamekeydown[127] && !cmd->arti
+    if (gamekeydown[key_arti_tome] && !cmd->arti
         && !players[consoleplayer].powers[pw_weaponlevel2])
     {
-        gamekeydown[127] = false;
+        gamekeydown[key_arti_tome] = false;
         cmd->arti = arti_tomeofpower;
+    }
+    else if (gamekeydown[key_arti_quartz] && !cmd->arti
+        && (players[consoleplayer].mo->health < MAXHEALTH))
+    {
+        gamekeydown[key_arti_quartz] = false;
+        cmd->arti = arti_health;
+    }
+    else if (gamekeydown[key_arti_urn] && !cmd->arti)
+    {
+        gamekeydown[key_arti_urn] = false;
+        cmd->arti = arti_superhealth;
+    }
+    else if (gamekeydown[key_arti_bomb] && !cmd->arti)
+    {
+        gamekeydown[key_arti_bomb] = false;
+        cmd->arti = arti_firebomb;
+    }
+    else if (gamekeydown[key_arti_ring] && !cmd->arti)
+    {
+        gamekeydown[key_arti_ring] = false;
+        cmd->arti = arti_invulnerability;
+    }
+    else if (gamekeydown[key_arti_chaosdevice] && !cmd->arti)
+    {
+        gamekeydown[key_arti_chaosdevice] = false;
+        cmd->arti = arti_teleport;
+    }
+    else if (gamekeydown[key_arti_shadowsphere] && !cmd->arti)
+    {
+        gamekeydown[key_arti_shadowsphere] = false;
+        cmd->arti = arti_invisibility;
+    }
+    else if (gamekeydown[key_arti_wings] && !cmd->arti)
+    {
+        gamekeydown[key_arti_wings] = false;
+        cmd->arti = arti_fly;
+    }
+    else if (gamekeydown[key_arti_torch] && !cmd->arti)
+    {
+        gamekeydown[key_arti_torch] = false;
+        cmd->arti = arti_torch;
+    }
+    else if (gamekeydown[key_arti_morph] && !cmd->arti)
+    {
+        gamekeydown[key_arti_morph] = false;
+        cmd->arti = arti_egg;
     }
 
 //
@@ -730,6 +776,59 @@ static void SetJoyButtons(unsigned int buttons_mask)
     }
 }
 
+static boolean InventoryMoveLeft()
+{
+    inventoryTics = 5 * 35;
+    if (!inventory)
+    {
+        inventory = true;
+        return false;
+    }
+    inv_ptr--;
+    if (inv_ptr < 0)
+    {
+        inv_ptr = 0;
+    }
+    else
+    {
+        curpos--;
+        if (curpos < 0)
+        {
+            curpos = 0;
+        }
+    }
+    return true;
+}
+
+static boolean InventoryMoveRight()
+{
+    player_t *plr;
+
+    plr = &players[consoleplayer];
+    inventoryTics = 5 * 35;
+    if (!inventory)
+    {
+        inventory = true;
+        return false;
+    }
+    inv_ptr++;
+    if (inv_ptr >= plr->inventorySlotNum)
+    {
+        inv_ptr--;
+        if (inv_ptr < 0)
+            inv_ptr = 0;
+    }
+    else
+    {
+        curpos++;
+        if (curpos > 6)
+        {
+            curpos = 6;
+        }
+    }
+    return true;
+}
+
 static void SetMouseButtons(unsigned int buttons_mask)
 {
     int i;
@@ -749,6 +848,14 @@ static void SetMouseButtons(unsigned int buttons_mask)
             else if (i == mousebnextweapon)
             {
                 next_weapon = 1;
+            }
+            else if (i == mousebinvleft)
+            {
+                InventoryMoveLeft();
+            }
+            else if (i == mousebinvright)
+            {
+                InventoryMoveRight();
             }
         }
 
@@ -832,51 +939,19 @@ boolean G_Responder(event_t * ev)
         case ev_keydown:
             if (ev->data1 == key_invleft)
             {
-                inventoryTics = 5 * 35;
-                if (!inventory)
+                if (InventoryMoveLeft())
                 {
-                    inventory = true;
-                    break;
+                    return (true);
                 }
-                inv_ptr--;
-                if (inv_ptr < 0)
-                {
-                    inv_ptr = 0;
-                }
-                else
-                {
-                    curpos--;
-                    if (curpos < 0)
-                    {
-                        curpos = 0;
-                    }
-                }
-                return (true);
+                break;
             }
             if (ev->data1 == key_invright)
             {
-                inventoryTics = 5 * 35;
-                if (!inventory)
+                if (InventoryMoveRight())
                 {
-                    inventory = true;
-                    break;
+                    return (true);
                 }
-                inv_ptr++;
-                if (inv_ptr >= plr->inventorySlotNum)
-                {
-                    inv_ptr--;
-                    if (inv_ptr < 0)
-                        inv_ptr = 0;
-                }
-                else
-                {
-                    curpos++;
-                    if (curpos > 6)
-                    {
-                        curpos = 6;
-                    }
-                }
-                return (true);
+                break;
             }
             if (ev->data1 == key_pause && !MenuActive)
             {
@@ -1782,7 +1857,7 @@ void G_WriteDemoTiccmd(ticcmd_t * cmd)
 */
 
 void G_RecordDemo(skill_t skill, int numplayers, int episode, int map,
-                  char *name)
+                  const char *name)
 {
     int i;
     int maxsize;

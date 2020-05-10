@@ -622,7 +622,7 @@ static void AddXdgDirs(void)
 
     if (env == NULL)
     {
-        char *homedir = getenv("HOME");
+        const char *homedir = getenv("HOME");
         if (homedir == NULL)
         {
             homedir = "/";
@@ -787,6 +787,7 @@ char *D_FindWADByName(const char *name)
         {
             return probe;
         }
+        free(probe);
 
         // Construct a string for the full path
 
@@ -839,7 +840,7 @@ char *D_TryFindWADByName(const char *filename)
 char *D_FindIWAD(int mask, GameMission_t *mission)
 {
     char *result;
-    char *iwadfile;
+    const char *iwadfile;
     int iwadparm;
     int i;
 

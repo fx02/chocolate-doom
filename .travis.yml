@@ -3,7 +3,7 @@ language: c
 compiler: gcc
 
 sudo: required
-dist: xenial
+dist: bionic
 
 env:
     - ANALYZE=false
@@ -25,3 +25,5 @@ script: ./.travis.sh
 branches:
     only:
     - master
+    - c++-clean
+    - vanilla-net

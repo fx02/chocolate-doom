@@ -3,12 +3,12 @@ AC_INIT(Competition Doom, 3.0.0,
 
 PACKAGE_SHORTNAME=${PACKAGE_NAME% Doom}
 PACKAGE_SHORTDESC="Conservative source port"
-PACKAGE_COPYRIGHT="Copyright (C) 2011-2019"
+PACKAGE_COPYRIGHT="Copyright (C) 2011-2020"
 PACKAGE_LICENSE="GNU General Public License, version 2"
 PACKAGE_MAINTAINER="Zvonimir Buzanic"
 PACKAGE_URL="https://doom.com.hr/"
 PACKAGE_RDNS="org.cndoom"
-PACKAGE_ISSUES="https://github.com/fx02/cndoom/issues"
+PACKAGE_BUGREPORT="https://github.com/fx02/cndoom/issues"
 
 AC_CONFIG_AUX_DIR(autotools)
 AC_CANONICAL_HOST
@@ -145,7 +145,7 @@ AC_SUBST(PACKAGE_LICENSE)
 AC_SUBST(PACKAGE_MAINTAINER)
 AC_SUBST(PACKAGE_URL)
 AC_SUBST(PACKAGE_RDNS)
-AC_SUBST(PACKAGE_ISSUES)
+AC_SUBST(PACKAGE_BUGREPORT)
 
 dnl Shut up the datarootdir warnings.
 AC_DEFUN([AC_DATAROOTDIR_CHECKED])
